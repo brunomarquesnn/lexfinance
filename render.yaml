@@ -1,15 +1,13 @@
-services:
-  # O Banco de Dados PostgreSQL
-  - type: pgbd
-    name: lexfinance-db
-    plan: free # ou starter se precisar de estabilidade
+databases:
+  - name: lexfinance-db
+    plan: free
     postgresMajorVersion: 16
 
-  # O Servidor Node.js
+services:
   - type: web
     name: lexfinance-web
     env: node
-    plan: free # ou starter
+    plan: free
     buildCommand: npm install && npm run build
     startCommand: npm run start
     envVars:
