@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Gestão Financeira</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1C2640 0%, #2E3A5C 50%, #1C2640 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f8fafc;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+        }
+
+        .login-brand {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .brand-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #D4A76A, #B8894E);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(212, 167, 106, 0.3);
+        }
+
+        .brand-icon svg {
+            width: 32px;
+            height: 32px;
+            color: white;
+        }
+
+        .login-brand h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .login-brand p {
+            color: #D4A76A;
+            font-size: 0.9rem;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(212, 167, 106, 0.15);
+            border-radius: 20px;
+            padding: 36px;
+            backdrop-filter: blur(20px);
+        }
+
+        .tab-toggle {
+            display: flex;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            margin-bottom: 28px;
+            padding: 4px;
+        }
+
+        .tab-toggle button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: none;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .tab-toggle button.active {
+            background: #D4A76A;
+            color: #1C2640;
+            box-shadow: 0 2px 8px rgba(212, 167, 106, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            font-size: 0.92rem;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+
+        .form-group input::placeholder {
+            color: #64748b;
+        }
+
+        .form-group input:focus {
+            border-color: #D4A76A;
+            box-shadow: 0 0 0 3px rgba(212, 167, 106, 0.15);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #D4A76A, #B8894E);
+            color: #1C2640;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            margin-top: 8px;
+            box-shadow: 0 4px 12px rgba(212, 167, 106, 0.3);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(212, 167, 106, 0.4);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-msg {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .success-msg {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 24px;
+            color: #D4A76A;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        #signup-fields {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-brand">
+            <div class="brand-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" fill="none">
+                    <path d="M100 10 L170 45 L170 120 Q170 170 100 210 Q30 170 30 120 L30 45 Z" stroke="white"
+                        stroke-width="8" fill="none" stroke-linejoin="round" />
+                    <line x1="100" y1="55" x2="100" y2="175" stroke="white" stroke-width="7" stroke-linecap="round" />
+                    <line x1="60" y1="80" x2="140" y2="80" stroke="white" stroke-width="7" stroke-linecap="round" />
+                    <path d="M90 55 L100 38 L110 55" stroke="white" stroke-width="7" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M60 80 L50 112 Q65 124 80 112 L70 80" stroke="white" stroke-width="5" fill="none"
+                        stroke-linejoin="round" />
+                    <path d="M130 80 L120 112 Q135 124 150 112 L140 80" stroke="white" stroke-width="5" fill="none"
+                        stroke-linejoin="round" />
+                    <path d="M70 140 Q85 155 100 140 Q115 155 130 140" stroke="white" stroke-width="5" fill="none"
+                        stroke-linecap="round" />
+                    <path d="M80 165 L100 180 L120 165" stroke="white" stroke-width="5" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <h1>Gestão Financeira</h1>
+            <p id="login-app-name"></p>
+        </div>
+
+        <div class="login-card">
+            <div class="tab-toggle">
+                <button class="active" onclick="switchTab('login')">Entrar</button>
+                <button onclick="switchTab('signup')">Cadastrar</button>
+            </div>
+
+            <div id="error-msg" class="error-msg"></div>
+            <div id="success-msg" class="success-msg"></div>
+
+            <form id="auth-form" onsubmit="handleAuth(event)">
+                <div id="signup-fields">
+                    <div class="form-group">
+                        <label>Nome Completo</label>
+                        <input type="text" name="name" placeholder="Ex: Dr. João Silva">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" name="email" placeholder="seu@email.com.br" required>
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" name="password" placeholder="Digite sua senha" required minlength="6">
+                </div>
+                <button type="submit" class="btn-login" id="submit-btn">Entrar</button>
+            </form>
+        </div>
+
+        <div class="login-footer">
+            <span id="login-footer-text">© 2026 Gestão Financeira v1.0</span>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        let currentMode = 'login';
+        
+        fetch('/api/config')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('page-title').innerText = 'Gestão Financeira — ' + data.appName;
+                document.getElementById('login-app-name').innerText = data.appName;
+                document.getElementById('login-footer-text').innerText = '© ' + new Date().getFullYear() + ' ' + data.appName + ' — Gestão Financeira v1.0';
+            })
+            .catch(err => {
+                console.error('Erro ao carregar configurações:', err);
+                document.getElementById('login-app-name').innerText = 'Lima Advocacia e Associados';
+                document.getElementById('login-footer-text').innerText = '© ' + new Date().getFullYear() + ' Lima Advocacia e Associados — Gestão Financeira v1.0';
+            });
+
+        function switchTab(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.tab-toggle button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('signup-fields').style.display = mode === 'signup' ? 'block' : 'none';
+            document.getElementById('submit-btn').textContent = mode === 'login' ? 'Entrar' : 'Criar Conta';
+            document.getElementById('error-msg').style.display = 'none';
+            document.getElementById('success-msg').style.display = 'none';
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('submit-btn');
+            const errorDiv = document.getElementById('error-msg');
+            const successDiv = document.getElementById('success-msg');
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = 'Aguarde...';
+
+            const body = {
+                email: form.email.value,
+                password: form.password.value
+            };
+            if (currentMode === 'signup') body.name = form.name.value;
+
+            try {
+                const url = currentMode === 'login' ? '/api/auth/login' : '/api/auth/signup';
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    if (currentMode === 'signup') {
+                        successDiv.textContent = 'Conta criada! Redirecionando...';
+                        successDiv.style.display = 'block';
+                    }
+                    setTimeout(() => window.location.href = '/', 500);
+                } else {
+                    errorDiv.textContent = data.error || 'Erro ao autenticar';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Erro de conexão com o servidor';
+                errorDiv.style.display = 'block';
+            }
+
+            btn.disabled = false;
+            btn.textContent = currentMode === 'login' ? 'Entrar' : 'Criar Conta';
+        }
+    </script>
+</body>
+
+</html>

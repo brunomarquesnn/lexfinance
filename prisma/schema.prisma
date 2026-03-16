@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("user") // "admin" | "user"
+  createdAt DateTime @default(now())
+}
+
+model Transaction {
+  id              String   @id @default(cuid())
+  date            DateTime
+  description     String
+  value           Float
+  type            String
+  status          String
+  categoryId      String
+  costCenter      String?
+  bank            String?
+  reference       String?
+  clientName      String?
+  isReimbursement Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  category     Category      @relation(fields: [categoryId], references: [id])
+  taxProvision TaxProvision?
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  type      String
+  color     String
+  icon      String?
+  taxable   Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  transactions Transaction[]
+  budgets      Budget[]
+}
+
+model Budget {
+  id         String   @id @default(cuid())
+  month      Int
+  year       Int
+  categoryId String
+  department String
+  amount     Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  category Category @relation(fields: [categoryId], references: [id])
+}
+
+model TaxProvision {
+  id            String   @id @default(cuid())
+  transactionId String?  @unique
+  taxType       String
+  competence    String
+  dueDate       DateTime
+  value         Float
+  status        String
+  baseValue     Float
+  rate          Float
+  createdAt     DateTime @default(now())
+
+  transaction Transaction? @relation(fields: [transactionId], references: [id])
+}
+
+model AppConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Gestão Financeira</title>
+  <meta name="description" content="Gestão Financeira">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+  <div id="app">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" fill="none" class="brand-lucide"
+            style="width:24px;height:24px">
+            <path d="M100 10 L170 45 L170 120 Q170 170 100 210 Q30 170 30 120 L30 45 Z" stroke="white" stroke-width="8"
+              fill="none" stroke-linejoin="round" />
+            <line x1="100" y1="55" x2="100" y2="175" stroke="white" stroke-width="7" stroke-linecap="round" />
+            <line x1="60" y1="80" x2="140" y2="80" stroke="white" stroke-width="7" stroke-linecap="round" />
+            <path d="M90 55 L100 38 L110 55" stroke="white" stroke-width="7" fill="none" stroke-linecap="round"
+              stroke-linejoin="round" />
+            <path d="M60 80 L50 112 Q65 124 80 112 L70 80" stroke="white" stroke-width="5" fill="none"
+              stroke-linejoin="round" />
+            <path d="M130 80 L120 112 Q135 124 150 112 L140 80" stroke="white" stroke-width="5" fill="none"
+              stroke-linejoin="round" />
+            <path d="M70 140 Q85 155 100 140 Q115 155 130 140" stroke="white" stroke-width="5" fill="none"
+              stroke-linecap="round" />
+            <path d="M80 165 L100 180 L120 165" stroke="white" stroke-width="5" fill="none" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Gestão Financeira</h1>
+          <span id="sidebar-app-name"></span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-page="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-page="cash-flow">
+          <i data-lucide="wallet"></i>
+          <span>Fluxo de Caixa</span>
+        </a>
+        <a href="#" class="nav-item" data-page="forecast">
+          <i data-lucide="trending-up"></i>
+          <span>Forecast</span>
+        </a>
+        <a href="#" class="nav-item" data-page="taxes">
+          <i data-lucide="receipt"></i>
+          <span>Impostos</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-avatar" id="sidebar-avatar">TL</div>
+        <div class="user-info">
+          <strong id="sidebar-user-name">Carregando...</strong>
+          <span id="sidebar-user-role">Usuário</span>
+        </div>
+        <button class="icon-btn" onclick="logout()" title="Sair" style="color:#94a3b8;margin-left:auto">
+          <i data-lucide="log-out"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="main-content">
+      <header id="topbar">
+        <div class="topbar-search">
+          <i data-lucide="search"></i>
+          <input type="text" placeholder="Pesquisar processos, faturas ou clientes" id="global-search">
+        </div>
+        <div class="topbar-actions">
+          <div class="theme-dropdown-wrapper">
+            <button class="theme-toggle-btn" onclick="toggleThemeDropdown()" title="Tema">
+              <i data-lucide="palette"></i>
+              <span id="current-theme-label">Claro</span>
+            </button>
+            <div class="theme-dropdown" id="theme-dropdown">
+              <button class="theme-option active" data-theme="" onclick="setTheme('')">
+                <i data-lucide="sun"></i> Claro
+              </button>
+              <button class="theme-option" data-theme="dark" onclick="setTheme('dark')">
+                <i data-lucide="moon"></i> Escuro
+              </button>
+              <button class="theme-option" data-theme="sepia" onclick="setTheme('sepia')">
+                <i data-lucide="book-open"></i> Sépia
+              </button>
+              <button class="theme-option" data-theme="midnight" onclick="setTheme('midnight')">
+                <i data-lucide="star"></i> Midnight
+              </button>
+            </div>
+          </div>
+          <div style="position:relative">
+            <button class="icon-btn notification-btn" id="notification-btn" onclick="toggleNotifications()">
+              <i data-lucide="bell"></i>
+              <span class="notification-badge" id="notification-badge" style="display:none">0</span>
+            </button>
+            <div id="notification-dropdown" class="notification-dropdown">
+              <div class="notif-header">
+                <h4>Notificações</h4>
+                <div style="display:flex;gap:8px">
+                  <button class="text-btn" onclick="markAllNotificationsRead()">Marcar como lidas</button>
+                  <button class="text-btn" onclick="clearAllNotifications()"
+                    style="color:var(--accent-red)">Limpar</button>
+                </div>
+              </div>
+              <div class="notif-list" id="notification-list">
+                <!-- Injetado via JS -->
+              </div>
+            </div>
+          </div>
+          <div class="user-pill">
+            <span id="topbar-user-name">Carregando...</span>
+            <div class="user-avatar-sm" id="topbar-avatar">TL</div>
+          </div>
+        </div>
+      </header>
+
+      <div id="page-container">
+        <div id="page-dashboard" class="page active"></div>
+        <div id="page-cash-flow" class="page"></div>
+        <div id="page-forecast" class="page"></div>
+        <div id="page-taxes" class="page"></div>
+      </div>
+    </main>
+
+    <!-- AI Chat Panel -->
+    <div id="ai-chat-overlay" class="hidden" onclick="toggleAIChat()"></div>
+    <div id="ai-chat-panel" class="hidden">
+      <div class="chat-header">
+        <div class="chat-header-info">
+          <div class="ai-avatar"><i data-lucide="bot"></i></div>
+          <div>
+            <h3>Assistente Financeiro IA</h3>
+            <span class="chat-status">Powered by Claude</span>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="toggleAIChat()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-message ai">
+          <div class="message-content">
+            Olá! 👋 Sou seu assistente financeiro. Posso analisar os dados do escritório e responder suas perguntas. O
+            que gostaria de saber?
+          </div>
+        </div>
+        <div class="chat-suggestions" id="chat-suggestions">
+          <button onclick="sendSuggestion('Qual minha previsão de lucro para o próximo trimestre?')">📊 Previsão de
+            lucro trimestral</button>
+          <button onclick="sendSuggestion('Quais categorias estão acima do orçado?')">⚠️ Categorias acima do
+            orçamento</button>
+          <button onclick="sendSuggestion('Quanto devo provisionar em impostos esse mês?')">💰 Provisão de
+            impostos</button>
+          <button onclick="sendSuggestion('Qual a minha margem líquida real?')">📈 Margem líquida real</button>
+        </div>
+      </div>
+      <div class="chat-input">
+        <input type="text" id="chat-input-field" placeholder="Digite sua pergunta..."
+          onkeydown="if(event.key==='Enter')sendChatMessage()">
+        <button onclick="sendChatMessage()" id="chat-send-btn"><i data-lucide="send"></i></button>
+      </div>
+    </div>
+
+    <button id="ai-fab" onclick="toggleAIChat()">
+      <i data-lucide="message-circle"></i>
+    </button>
+  </div>
+
+  <!-- Modal: Novo Lançamento -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Novo Lançamento</h2>
+        <button class="icon-btn" onclick="closeModal()"><i data-lucide="x"></i></button>
+      </div>
+      <form id="transaction-form" onsubmit="handleNewTransaction(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Descrição *</label>
+            <input type="text" name="description" required placeholder="Ex: Honorários Proc. 12345">
+          </div>
+          <div class="form-group">
+            <label>Valor (R$) *</label>
+            <input type="number" name="value" required step="0.01" placeholder="0,00">
+          </div>
+          <div class="form-group">
+            <label>Data *</label>
+            <input type="date" name="date" required>
+          </div>
+          <div class="form-group">
+            <label>Tipo *</label>
+            <select name="type" required>
+              <option value="ENTRADA">Entrada</option>
+              <option value="SAIDA">Saída</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Categoria *</label>
+            <select name="categoryId" required id="modal-category-select"></select>
+          </div>
+          <div class="form-group">
+            <label>Centro de Custo</label>
+            <select name="costCenter">
+              <option value="">Selecionar...</option>
+              <option value="Litigation">Contencioso</option>
+              <option value="Labor">Trabalhista</option>
+              <option value="Civil">Cível</option>
+              <option value="Precatorio">Precatório</option>
+              <option value="Familia">Família</option>
+              <option value="Ambiental">Ambiental</option>
+              <option value="Criminal">Criminal</option>
+              <option value="Penal">Penal</option>
+              <option value="Previdenciario">Previdenciário</option>
+              <option value="Corporate">Societário</option>
+              <option value="Admin">Administrativo</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Banco</label>
+            <select name="bank">
+              <option value="">Selecionar...</option>
+              <option value="Sicredi">Sicredi</option>
+              <option value="Nubank">Nubank</option>
+              <option value="C6 Bank">C6 Bank</option>
+              <option value="Bradesco">Bradesco</option>
+              <option value="Banco do Brasil">Banco do Brasil</option>
+              <option value="Caixa Econômica Federal">Caixa Econômica Federal</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Cliente</label>
+            <input type="text" name="clientName" placeholder="Nome do cliente">
+          </div>
+          <div class="form-group">
+            <label>Referência</label>
+            <input type="text" name="reference" placeholder="Nº do processo">
+          </div>
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" name="isReimbursement">
+              Verba de Reembolso (não tributável)
+            </label>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">Criar Lançamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Ajustar Fundo de Provisão -->
+  <div id="fund-config-modal-overlay" class="modal-overlay hidden" onclick="closeFundConfigModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Ajustar Meta do Fundo</h2>
+        <button class="icon-btn" onclick="closeFundConfigModal()"><i data-lucide="x"></i></button>
+      </div>
+      <form id="fund-config-form" onsubmit="handleFundConfig(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Meta de Reserva (R$) *</label>
+            <input type="number" step="0.01" name="meta" required placeholder="Ex: 80000.00">
+          </div>
+          <div class="form-group">
+            <label>Ciclo da Provisão *</label>
+            <select name="period" required>
+              <option value="mensal">Mensal</option>
+              <option value="trimestre">Trimestral</option>
+              <option value="anual">Anual</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeFundConfigModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar Configuração</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Nova Provisão -->
+  <div id="provision-modal-overlay" class="modal-overlay hidden" onclick="closeProvisionModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Nova Provisão Fiscal</h2>
+        <button class="icon-btn" onclick="closeProvisionModal()"><i data-lucide="x"></i></button>
+      </div>
+      <form id="provision-form" onsubmit="handleNewProvision(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Tipo de Imposto *</label>
+            <select name="taxType" required>
+              <option value="ISS">ISS</option>
+              <option value="PIS/COFINS">PIS/COFINS</option>
+              <option value="IRPJ">IRPJ</option>
+              <option value="CSLL">CSLL</option>
+              <option value="FGTS">FGTS</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status *</label>
+            <select name="status" required>
+              <option value="PROVISIONADO">Provisionado</option>
+              <option value="PLANEJADO">Planejado</option>
+              <option value="PAGO">Pago</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Competência *</label>
+            <input type="text" name="competence" required placeholder="MM/AAAA" pattern="[0-9]{2}/[0-9]{4}">
+          </div>
+          <div class="form-group">
+            <label>Data de Vencimento *</label>
+            <input type="date" name="dueDate" required>
+          </div>
+          <div class="form-group">
+            <label>Valor (R$) *</label>
+            <input type="number" name="value" required step="0.01" placeholder="0,00">
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeProvisionModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">Criar Provisão</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- Modal: Custo Fixo/Variável -->
+  <div id="cost-modal-overlay" class="modal-overlay hidden" onclick="closeCostModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2 id="cost-modal-title">Novo Custo</h2>
+        <button class="icon-btn" onclick="closeCostModal()"><i data-lucide="x"></i></button>
+      </div>
+      <form id="cost-form" onsubmit="handleNewCost(event)">
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: 1 / -1">
+            <label>Descrição *</label>
+            <input type="text" name="description" required placeholder="Ex: Aluguel escritório Jan/2026">
+          </div>
+          <div class="form-group">
+            <label>Data *</label>
+            <input type="date" name="date" required>
+          </div>
+          <div class="form-group">
+            <label>Valor (R$) *</label>
+            <input type="number" name="value" required step="0.01" min="0" placeholder="0,00">
+          </div>
+          <div class="form-group">
+            <label>Categoria *</label>
+            <select name="categoryId" id="cost-category-select" required></select>
+          </div>
+          <div class="form-group">
+            <label>Centro de Custo</label>
+            <select name="costCenter">
+              <option value="">—</option>
+              <option value="Litigation">Contencioso</option>
+              <option value="Labor">Trabalhista</option>
+              <option value="Civil">Cível</option>
+              <option value="Precatorio">Precatório</option>
+              <option value="Familia">Família</option>
+              <option value="Ambiental">Ambiental</option>
+              <option value="Criminal">Criminal</option>
+              <option value="Penal">Penal</option>
+              <option value="Previdenciario">Previdenciário</option>
+              <option value="Corporate">Societário</option>
+              <option value="Admin">Administrativo</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeCostModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar Custo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- Modal: Novo Orçamento -->
+  <div id="budget-modal-overlay" class="modal-overlay hidden" onclick="closeBudgetModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Novo Planejamento Orçamentário</h2>
+        <button class="icon-btn" onclick="closeBudgetModal()"><i data-lucide="x"></i></button>
+      </div>
+      <form id="budget-form" onsubmit="handleNewBudget(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Categoria *</label>
+            <select name="categoryId" id="budget-category-select" required></select>
+          </div>
+          <div class="form-group">
+            <label>Centro de Custo</label>
+            <select name="department">
+              <option value="Litigation">Contencioso</option>
+              <option value="Labor">Trabalhista</option>
+              <option value="Civil">Cível</option>
+              <option value="Precatorio">Precatório</option>
+              <option value="Familia">Família</option>
+              <option value="Ambiental">Ambiental</option>
+              <option value="Criminal">Criminal</option>
+              <option value="Penal">Penal</option>
+              <option value="Previdenciario">Previdenciário</option>
+              <option value="Corporate">Societário</option>
+              <option value="Admin">Administrativo</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Mês Inicial *</label>
+            <select name="month" id="budget-month" required>
+              <option value="1">Janeiro</option>
+              <option value="2">Fevereiro</option>
+              <option value="3">Março</option>
+              <option value="4">Abril</option>
+              <option value="5">Maio</option>
+              <option value="6">Junho</option>
+              <option value="7">Julho</option>
+              <option value="8">Agosto</option>
+              <option value="9">Setembro</option>
+              <option value="10">Outubro</option>
+              <option value="11">Novembro</option>
+              <option value="12">Dezembro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Ano *</label>
+            <select name="year" id="budget-year" required>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Valor Total Orçado (R$) *</label>
+            <input type="number" name="amount" required step="0.01" min="0" placeholder="0,00">
+          </div>
+          <div class="form-group" id="budget-installments-group">
+            <label>Parcelas</label>
+            <input type="number" name="installments" value="1" min="1" max="36" placeholder="1">
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1">
+            <label>Data de Pagamento</label>
+            <input type="date" name="paymentDate">
+          </div>
+        </div>
+        <p id="budget-installments-warning"
+          style="font-size:0.8rem;color:var(--text-muted);margin-top:-8px;margin-bottom:12px">Se houver mais de 1
+          parcela, o valor será dividido igualmente entre os meses seguintes.</p>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeBudgetModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar Orçamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Importar Excel -->
+  <div id="import-modal-overlay" class="modal-overlay hidden" onclick="closeImportModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Importar Planilha Excel</h2>
+        <button class="icon-btn" onclick="closeImportModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div style="padding:24px">
+        <div id="import-dropzone"
+          style="border:2px dashed var(--border);border-radius:var(--radius-lg);padding:40px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--bg-hover)"
+          onclick="document.getElementById('import-file-input').click()">
+          <i data-lucide="upload-cloud" style="width:40px;height:40px;color:var(--brand-gold);margin-bottom:12px"></i>
+          <p style="font-weight:600;color:var(--text-primary);margin-bottom:4px">Arraste seu arquivo ou clique para
+            selecionar</p>
+          <p style="font-size:0.82rem;color:var(--text-muted)">Formatos aceitos: .xlsx (mesmo formato da exportação)</p>
+          <input type="file" id="import-file-input" accept=".xlsx,.xls" style="display:none"
+            onchange="handleImportFile(event)">
+        </div>
+        <div id="import-result"
+          style="display:none;margin-top:16px;padding:14px;border-radius:var(--radius-md);font-size:0.9rem"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="closeImportModal()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => {
+        window.appConfig = data;
+        document.getElementById('page-title').innerText = 'Gestão Financeira — ' + data.appName;
+        document.getElementById('sidebar-app-name').innerText = data.appName;
+      })
+      .catch(err => {
+        console.error('Erro ao carregar configurações:', err);
+        window.appConfig = { appName: 'Lima Advocacia e Associados' };
+      });
+  </script>
+  <script src="/app.js"></script>
+</body>
+
+</html>
