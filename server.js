@@ -121,13 +121,13 @@ app.get('/api/summary', async (req, res) => {
         const endOfMonth = new Date(year, month, 0, 23, 59, 59);
 
         const entriesAgg = await prisma.transaction.aggregate({
-            where: { type: 'ENTRADA', date: { gte: startOfMonth, lte: endOfMonth } },
+            where: { type: 'ENTRADA', date: { gte: startOfMonth, lte: endOfMonth }, status: 'PAGO' },
             _sum: { value: true }
         });
         const monthlyRevenue = entriesAgg._sum.value || 0;
 
         const expensesAgg = await prisma.transaction.aggregate({
-            where: { type: 'SAIDA', date: { gte: startOfMonth, lte: endOfMonth } },
+            where: { type: 'SAIDA', date: { gte: startOfMonth, lte: endOfMonth }, status: 'PAGO' },
             _sum: { value: true }
         });
         const totalExpenses = Math.abs(expensesAgg._sum.value || 0);
@@ -139,7 +139,7 @@ app.get('/api/summary', async (req, res) => {
         const prevStart = new Date(year, month - 2, 1);
         const prevEnd = new Date(year, month - 1, 0, 23, 59, 59);
         const prevAgg = await prisma.transaction.aggregate({
-            where: { type: 'ENTRADA', date: { gte: prevStart, lte: prevEnd } },
+            where: { type: 'ENTRADA', date: { gte: prevStart, lte: prevEnd }, status: 'PAGO' },
             _sum: { value: true }
         });
         const prevRevenue = prevAgg._sum.value || 0;
@@ -156,7 +156,7 @@ app.get('/api/summary', async (req, res) => {
 
         const expensesByCostCenter = await prisma.transaction.groupBy({
             by: ['costCenter'],
-            where: { type: 'SAIDA', date: { gte: startOfMonth, lte: endOfMonth } },
+            where: { type: 'SAIDA', date: { gte: startOfMonth, lte: endOfMonth }, status: 'PAGO' },
             _sum: { value: true }
         });
 
@@ -182,8 +182,8 @@ app.get('/api/summary', async (req, res) => {
             const hMonth = hm.getMonth() + 1; const hYear = hm.getFullYear();
             const hComp = `${String(hMonth).padStart(2, '0')}/${hYear}`;
             const [inAgg, outAgg, taxAgg] = await Promise.all([
-                prisma.transaction.aggregate({ where: { type: 'ENTRADA', date: { gte: hStart, lte: hEnd } }, _sum: { value: true } }),
-                prisma.transaction.aggregate({ where: { type: 'SAIDA', date: { gte: hStart, lte: hEnd } }, _sum: { value: true } }),
+                prisma.transaction.aggregate({ where: { type: 'ENTRADA', date: { gte: hStart, lte: hEnd }, status: 'PAGO' }, _sum: { value: true } }),
+                prisma.transaction.aggregate({ where: { type: 'SAIDA', date: { gte: hStart, lte: hEnd }, status: 'PAGO' }, _sum: { value: true } }),
                 prisma.taxProvision.aggregate({ where: { competence: hComp, status: { not: 'CANCELADO' } }, _sum: { value: true } })
             ]);
             const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -232,8 +232,8 @@ app.get('/api/transactions', async (req, res) => {
         const [transactions, total, inAgg, outAgg] = await Promise.all([
             prisma.transaction.findMany({ where, skip, take: parseInt(limit), orderBy: { date: 'desc' }, include: { category: true } }),
             prisma.transaction.count({ where }),
-            prisma.transaction.aggregate({ where: { ...where, type: 'ENTRADA' }, _sum: { value: true } }),
-            prisma.transaction.aggregate({ where: { ...where, type: 'SAIDA' }, _sum: { value: true } })
+            prisma.transaction.aggregate({ where: { ...where, type: 'ENTRADA', status: 'PAGO' }, _sum: { value: true } }),
+            prisma.transaction.aggregate({ where: { ...where, type: 'SAIDA', status: 'PAGO' }, _sum: { value: true } })
         ]);
 
         const totalIn = inAgg._sum.value || 0;
@@ -452,11 +452,11 @@ app.get('/api/taxes', async (req, res) => {
         const fixedCategories = ['Aluguel', 'Salários', 'Software/SaaS'];
         const dateFilter = { gte: startOfPeriod, lte: endOfPeriod };
         const fixedCosts = await prisma.transaction.aggregate({
-            where: { type: 'SAIDA', date: dateFilter, category: { name: { in: fixedCategories } } },
+            where: { type: 'SAIDA', date: dateFilter, category: { name: { in: fixedCategories } }, status: 'PAGO' },
             _sum: { value: true }
         });
         const variableCosts = await prisma.transaction.aggregate({
-            where: { type: 'SAIDA', date: dateFilter, category: { name: { notIn: fixedCategories } } },
+            where: { type: 'SAIDA', date: dateFilter, category: { name: { notIn: fixedCategories } }, status: 'PAGO' },
             _sum: { value: true }
         });
 
@@ -482,7 +482,7 @@ app.get('/api/taxes', async (req, res) => {
             const hStart = new Date(hYear, hMonth - 1, 1);
             const hEnd = new Date(hYear, hMonth, 0, 23, 59, 59);
             const [hRevAgg, hTaxAgg] = await Promise.all([
-                prisma.transaction.aggregate({ where: { type: 'ENTRADA', date: { gte: hStart, lte: hEnd } }, _sum: { value: true } }),
+                prisma.transaction.aggregate({ where: { type: 'ENTRADA', date: { gte: hStart, lte: hEnd }, status: 'PAGO' }, _sum: { value: true } }),
                 prisma.taxProvision.aggregate({ where: { competence: hComp, status: { not: 'CANCELADO' } }, _sum: { value: true } })
             ]);
             const hRev = hRevAgg._sum.value || 0;
