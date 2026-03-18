@@ -914,7 +914,28 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`\n🏛️  Gestão Financeira`);
     console.log(`   Rodando em http://localhost:${PORT}\n`);
+    
+    try {
+        const count = await prisma.category.count();
+        if (count === 0) {
+            console.log('Criando categorias padrão no banco de dados...');
+            await Promise.all([
+                prisma.category.create({ data: { name: 'Honorários', type: 'RECEITA', color: '#10b981', icon: 'Scale', taxable: true } }),
+                prisma.category.create({ data: { name: 'Custas Judiciais', type: 'DESPESA', color: '#6366f1', icon: 'Gavel', taxable: false } }),
+                prisma.category.create({ data: { name: 'Verbas de Reembolso', type: 'REEMBOLSO', color: '#f59e0b', icon: 'RotateCcw', taxable: false } }),
+                prisma.category.create({ data: { name: 'Salários', type: 'DESPESA', color: '#ef4444', icon: 'Users', taxable: false } }),
+                prisma.category.create({ data: { name: 'Impostos', type: 'DESPESA', color: '#8b5cf6', icon: 'Receipt', taxable: false } }),
+                prisma.category.create({ data: { name: 'Software/SaaS', type: 'DESPESA', color: '#3b82f6', icon: 'Monitor', taxable: false } }),
+                prisma.category.create({ data: { name: 'Aluguel', type: 'DESPESA', color: '#ec4899', icon: 'Building', taxable: false } }),
+                prisma.category.create({ data: { name: 'Marketing', type: 'DESPESA', color: '#14b8a6', icon: 'Megaphone', taxable: false } }),
+                prisma.category.create({ data: { name: 'Operacional', type: 'DESPESA', color: '#f97316', icon: 'Settings', taxable: false } }),
+            ]);
+            console.log('Categorias criadas com sucesso!');
+        }
+    } catch (e) {
+        console.error('Falha ao verificar/criar categorias na inicialização:', e);
+    }
 });
