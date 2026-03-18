@@ -1558,7 +1558,17 @@ async function loadNotifications() {
   try {
     const res = await fetch('/api/notifications');
     const data = await res.json();
-    notificationsData = data;
+    
+    // Recupera estado lido/excluído do cache do navegador
+    const readNotifs = JSON.parse(localStorage.getItem('lexfinance_readNotifs') || '[]');
+    const deletedNotifs = JSON.parse(localStorage.getItem('lexfinance_deletedNotifs') || '[]');
+    
+    // Remove as excluídas e atualiza o status de lidas das restantes
+    notificationsData = data.filter(n => !deletedNotifs.includes(n.id)).map(n => {
+      if (readNotifs.includes(n.id)) n.read = true;
+      return n;
+    });
+    
     renderNotifications();
   } catch (e) { console.error('Error fetching notifications API:', e) }
 }
@@ -1601,15 +1611,24 @@ function toggleNotifications() {
 }
 
 function markAllNotificationsRead() {
-  notificationsData.forEach(n => n.read = true);
+  const readNotifs = JSON.parse(localStorage.getItem('lexfinance_readNotifs') || '[]');
+  notificationsData.forEach(n => {
+    n.read = true;
+    if (!readNotifs.includes(n.id)) readNotifs.push(n.id);
+  });
+  localStorage.setItem('lexfinance_readNotifs', JSON.stringify(readNotifs));
   renderNotifications();
 }
 
 function clearAllNotifications() {
+  const deletedNotifs = JSON.parse(localStorage.getItem('lexfinance_deletedNotifs') || '[]');
+  notificationsData.forEach(n => {
+    if (!deletedNotifs.includes(n.id)) deletedNotifs.push(n.id);
+  });
+  localStorage.setItem('lexfinance_deletedNotifs', JSON.stringify(deletedNotifs));
   notificationsData = [];
   renderNotifications();
 }
-
 // Fechar popup se clicar fora
 document.addEventListener('click', (e) => {
   if (!e.target.closest('#notification-btn') && !e.target.closest('#notification-dropdown')) {
