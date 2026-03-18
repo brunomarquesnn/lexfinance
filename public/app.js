@@ -1256,6 +1256,10 @@ function openModal() {
   editingTransactionId = null;
   document.getElementById('modal-overlay').classList.remove('hidden');
   document.getElementById('transaction-form').reset();
+  
+  const select = document.getElementById('modal-category-select');
+  if (select) select.innerHTML = categoriesCache.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  
   document.querySelector('#transaction-form button[type="submit"]').textContent = 'Criar Lançamento';
   document.querySelector('#modal-overlay h2').textContent = 'Novo Lançamento';
   document.querySelector('input[name="date"]').value = new Date().toISOString().split('T')[0];
@@ -1271,6 +1275,11 @@ async function editTransaction(id) {
     document.getElementById('modal-overlay').classList.remove('hidden');
     const form = document.getElementById('transaction-form');
     form.reset();
+    
+    // Repopular select antes de atribuir o valor
+    const select = document.getElementById('modal-category-select');
+    if (select) select.innerHTML = categoriesCache.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
     document.querySelector('#transaction-form button[type="submit"]').textContent = 'Salvar Alterações';
     document.querySelector('#modal-overlay h2').textContent = 'Editar Lançamento';
     form.description.value = data.description;
