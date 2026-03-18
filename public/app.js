@@ -1018,6 +1018,11 @@ async function cycleStatus(id, currentStatus) {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: nextStatus })
     });
+    
+    // Atualizar os totais na tela principal correspondente
+    if (currentPage === 'cash-flow') await fetchCashFlowData();
+    else if (currentPage === 'dashboard') await loadDashboard();
+    else if (currentPage === 'taxes') await loadTaxes();
   } catch (err) { console.error('Erro ao atualizar status:', err); }
 }
 
