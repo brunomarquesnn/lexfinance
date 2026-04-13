@@ -71,7 +71,9 @@ function formatCurrency(value, prefix = 'R$') {
 }
 
 function formatDate(dateStr) {
-  const d = new Date(dateStr);
+  if (!dateStr) return '';
+  const [year, month, day] = dateStr.split('T')[0].split('-');
+  const d = new Date(year, month - 1, day);
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 

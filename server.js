@@ -257,7 +257,7 @@ app.post('/api/transactions', async (req, res) => {
         const { date, description, value, type, categoryId, costCenter, bank, reference, clientName, isReimbursement } = req.body;
         const transaction = await prisma.transaction.create({
             data: {
-                date: new Date(date), description, value: parseFloat(value), type, status: 'PENDENTE',
+                date: new Date(date.includes('T') ? date : `${date}T12:00:00Z`), description, value: parseFloat(value), type, status: 'PENDENTE',
                 categoryId, costCenter: costCenter || null, bank: bank || null, reference: reference || null,
                 clientName: clientName || null, isReimbursement: isReimbursement || false
             },
@@ -287,7 +287,7 @@ app.put('/api/transactions/:id', async (req, res) => {
         if (req.body.status !== undefined) data.status = req.body.status;
         if (req.body.description !== undefined) data.description = req.body.description;
         if (req.body.value !== undefined) data.value = parseFloat(req.body.value);
-        if (req.body.date !== undefined) data.date = new Date(req.body.date);
+        if (req.body.date !== undefined) data.date = new Date(req.body.date.includes('T') ? req.body.date : `${req.body.date}T12:00:00Z`);
         if (req.body.type !== undefined) data.type = req.body.type;
         if (req.body.categoryId !== undefined) data.categoryId = req.body.categoryId;
         if (req.body.costCenter !== undefined) data.costCenter = req.body.costCenter;
@@ -563,7 +563,7 @@ app.post('/api/taxes/provision', async (req, res) => {
         const provision = await prisma.taxProvision.create({
             data: {
                 taxType, competence,
-                dueDate: new Date(dueDate),
+                dueDate: new Date(dueDate.includes('T') ? dueDate : `${dueDate}T12:00:00Z`),
                 value: parseFloat(value),
                 status: status || 'PROVISIONADO',
                 baseValue: parseFloat(baseValue || value),
@@ -592,7 +592,7 @@ app.put('/api/taxes/provision/:id', async (req, res) => {
         if (req.body.value !== undefined) data.value = parseFloat(req.body.value);
         if (req.body.taxType !== undefined) data.taxType = req.body.taxType;
         if (req.body.competence !== undefined) data.competence = req.body.competence;
-        if (req.body.dueDate !== undefined) data.dueDate = req.body.dueDate;
+        if (req.body.dueDate !== undefined) data.dueDate = new Date(req.body.dueDate.includes('T') ? req.body.dueDate : `${req.body.dueDate}T12:00:00Z`);
 
         const provision = await prisma.taxProvision.update({ where: { id }, data });
         res.json(provision);
